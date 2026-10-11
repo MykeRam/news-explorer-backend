@@ -1,7 +1,9 @@
 require('dotenv').config();
 
 const express = require('express');
+const mongoose = require('mongoose');
 const routes = require('./routes');
+const { MONGODB_URI } = require('./utils/config');
 
 const app = express();
 const { PORT = 3000 } = process.env;
@@ -22,4 +24,11 @@ app.use((error, req, res, next) => {
   return res.status(statusCode).json({ message });
 });
 
-app.listen(PORT);
+mongoose.connect(MONGODB_URI)
+  .then(() => {
+    app.listen(PORT);
+  })
+  .catch((error) => {
+    process.stderr.write(`Failed to connect to MongoDB: ${error.message}\n`);
+    process.exit(1);
+  });
