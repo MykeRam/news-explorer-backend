@@ -1,4 +1,5 @@
 const { isCelebrateError } = require('celebrate');
+const { errorLogger } = require('../utils/logger');
 
 module.exports = (error, req, res, next) => {
   if (res.headersSent) return next(error);
@@ -19,6 +20,14 @@ module.exports = (error, req, res, next) => {
     statusCode = error.statusCode;
     message = error.message;
   }
+
+  errorLogger.error({
+    event: 'request_error',
+    method: req.method,
+    path: req.path,
+    statusCode,
+    errorType: error.name || 'Error',
+  });
 
   return res.status(statusCode).json({ message });
 };

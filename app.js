@@ -4,16 +4,20 @@ const express = require('express');
 const mongoose = require('mongoose');
 const routes = require('./routes');
 const errorHandler = require('./middlewares/errorHandler');
+const requestLogger = require('./middlewares/requestLogger');
 const { MONGODB_URI } = require('./utils/config');
 
 const app = express();
 const { PORT = 3000 } = process.env;
 
 app.use(express.json());
+app.use(requestLogger);
 app.use('/', routes);
 
-app.use((req, res) => {
-  res.status(404).json({ message: 'Resource not found' });
+app.use((req, res, next) => {
+  const error = new Error('Resource not found');
+  error.statusCode = 404;
+  next(error);
 });
 
 app.use(errorHandler);
