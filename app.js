@@ -2,6 +2,7 @@ require('dotenv').config();
 
 const express = require('express');
 const mongoose = require('mongoose');
+const { isCelebrateError } = require('celebrate');
 const routes = require('./routes');
 const { MONGODB_URI } = require('./utils/config');
 
@@ -18,8 +19,19 @@ app.use((req, res) => {
 app.use((error, req, res, next) => {
   if (res.headersSent) return next(error);
 
-  const { statusCode = 500 } = error;
-  const message = statusCode === 500 ? 'Internal server error' : error.message;
+  let statusCode = error.statusCode || error.status || 500;
+  let message = statusCode === 500 ? 'Internal server error' : error.message;
+
+  if (isCelebrateError(error)) {
+    statusCode = 400;
+    message = 'Invalid request data';
+  } else if (error.code === 11000) {
+    statusCode = 409;
+    message = 'A user with this email already exists';
+  } else if (error.name === 'ValidationError' || error.name === 'CastError') {
+    statusCode = 400;
+    message = error.message;
+  }
 
   return res.status(statusCode).json({ message });
 });
