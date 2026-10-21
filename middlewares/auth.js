@@ -1,15 +1,16 @@
 const jwt = require('jsonwebtoken');
 const { JWT_SECRET } = require('../utils/config');
+const { UnauthorizedError } = require('../utils/errors');
 
 module.exports = (req, res, next) => {
   const { authorization } = req.headers;
 
   if (!authorization || !authorization.startsWith('Bearer ')) {
-    return res.status(401).json({ message: 'Authorization required' });
+    return next(new UnauthorizedError());
   }
 
   if (!JWT_SECRET) {
-    return res.status(500).json({ message: 'Authentication is not configured' });
+    return next(new Error('Authentication is not configured'));
   }
 
   try {
@@ -17,12 +18,12 @@ module.exports = (req, res, next) => {
     const payload = jwt.verify(token, JWT_SECRET);
 
     if (!payload._id) {
-      return res.status(401).json({ message: 'Invalid or expired token' });
+      return next(new UnauthorizedError('Invalid or expired token'));
     }
 
     req.user = payload;
     return next();
   } catch (error) {
-    return res.status(401).json({ message: 'Invalid or expired token' });
+    return next(new UnauthorizedError('Invalid or expired token'));
   }
 };

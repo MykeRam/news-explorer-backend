@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const { JWT_SECRET } = require('../utils/config');
+const { UnauthorizedError } = require('../utils/errors');
 
 const createUser = (req, res, next) => User.create(req.body)
   .then((user) => {
@@ -15,17 +16,17 @@ const login = (req, res, next) => User.findOne({ email: req.body.email.toLowerCa
   .select('+password')
   .then((user) => {
     if (!user) {
-      return res.status(401).json({ message: 'Incorrect email or password' });
+      return next(new UnauthorizedError('Incorrect email or password'));
     }
 
     return bcrypt.compare(req.body.password, user.password)
       .then((passwordMatches) => {
         if (!passwordMatches) {
-          return res.status(401).json({ message: 'Incorrect email or password' });
+          return next(new UnauthorizedError('Incorrect email or password'));
         }
 
         if (!JWT_SECRET) {
-          return res.status(500).json({ message: 'Authentication is not configured' });
+          return next(new Error('Authentication is not configured'));
         }
 
         const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: '7d' });

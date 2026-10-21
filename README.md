@@ -57,7 +57,15 @@ Request bodies use JSON. Protected endpoints require `Authorization: Bearer <tok
 
 An article requires `keyword`, `title`, `text`, `date`, `source`, `link`, and `image`. Both URL fields must use HTTP or HTTPS. Passwords must contain at least eight characters; names must contain 2–30 characters. Passwords are hashed before storage and excluded from API responses.
 
-Responses use `200` or `201` for success, `400` for invalid input, `401` for missing or invalid authentication, `403` for another user's article deletion, `404` for missing resources, and `409` for duplicate registration. Unexpected errors return a generic `500` response.
+Responses use `200` or `201` for success, `400` for invalid input, `401` for missing or invalid authentication, `403` for another user's article deletion, `404` for missing resources, `409` for duplicate registration, and `429` when the rate limit is reached. Unexpected errors return a generic `500` response.
+
+Celebrate validation errors include a `validation` object identifying the affected request segment, field names, and validation message. Other errors return `{ "message": "..." }`. Controllers and authentication middleware forward errors to the centralized handler using custom error classes. Database and JSON parsing errors are normalized before handling, and error logging runs separately before Celebrate's `errors()` middleware and the final response handler.
+
+## Security middleware
+
+Helmet sets security-related HTTP headers and removes `X-Powered-By`. The rate limiter is configured separately in `middlewares/rateLimiter.js` and allows 100 requests per client IP per 15 minutes. Blocked requests return JSON with status `429`, rate-limit headers, and a `Retry-After` header.
+
+The application trusts only loopback proxies, matching Nginx forwarding locally to `127.0.0.1:3000`. Client addresses are derived from that trusted proxy chain, so users do not all share Nginx's rate-limit counter. The default in-memory rate-limit store is intended for this single-process deployment; counters reset on restart. A shared store would be needed for multiple application processes.
 
 ## Production operation
 

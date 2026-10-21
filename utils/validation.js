@@ -1,4 +1,5 @@
 const { celebrate, Joi } = require('celebrate');
+const { UnauthorizedError } = require('./errors');
 
 const signupValidation = celebrate({
   body: Joi.object({
@@ -40,7 +41,7 @@ const validateAuthorizationHeader = (req, res, next) => {
   const { error } = authorizationSchema.validate(req.headers);
 
   if (error) {
-    return res.status(401).json({ message: 'Authorization required' });
+    return next(new UnauthorizedError());
   }
 
   return next();
