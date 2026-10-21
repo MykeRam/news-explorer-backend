@@ -2,6 +2,16 @@
 
 Express and MongoDB backend for the TripleTen News Explorer final project. Provides JWT authentication and saved-article storage with ownership protection.
 
+## Project status
+
+**Stage 2: complete and accepted by the instructor.**
+
+The backend includes user registration and sign-in, JWT authorization, protected profile and saved-article routes, ownership checks, request validation, and JSON request/error logging. The API is deployed over HTTPS.
+
+Instructor-feedback fixes and optional hardening have also been implemented and verified locally on `stage-2-backend`: detailed Celebrate validation responses, custom error classes, separate error logging, Helmet, and rate limiting. These latest changes still need deployment to the VM.
+
+Stage 2 pull request: https://github.com/MykeRam/news-explorer-backend/pull/1
+
 ## Deployed API
 
 **Base URL:** https://api.news-explorer-mykeram.mooo.com
@@ -22,7 +32,7 @@ Install Node.js, npm, and MongoDB, then clone this repository and install depend
 npm ci
 ```
 
-Create a `.env` file in the repository root:
+For local development, `.env` is optional: the application defaults to port `3000`, the local `news-explorer` MongoDB database, and a development-only JWT secret. To override these defaults, create a `.env` file in the repository root:
 
 ```dotenv
 NODE_ENV=development
@@ -93,4 +103,14 @@ Verified on October 17, 2026:
 - Twenty live API checks covering registration, duplicate registration, sign-in, invalid credentials/JWTs, protected routes, profile responses, article validation, article creation/listing/deletion, ownership protection, and missing articles.
 - Test articles and both temporary test accounts were removed after verification.
 
-Frontend integration and CORS configuration are separate follow-up work for Stage 3.
+Verified locally on October 21, 2026, after applying instructor feedback:
+
+- Production and development startup, including automatic restart in development.
+- Field-specific validation responses, authentication errors, article ownership checks, and centralized error responses.
+- Separate error logging without passwords or request bodies, and generic responses for unexpected server errors.
+- Helmet headers and per-client rate limiting, including proxy handling and IPv6 clients.
+- Lint, whitespace checks, and a production dependency audit reporting zero vulnerabilities.
+
+## Next stage
+
+Stage 3 covers frontend integration with the deployed backend, including authentication flows, saved articles, and CORS configuration. Deploy and verify the latest backend hardening changes before testing that integration.
