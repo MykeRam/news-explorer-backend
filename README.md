@@ -8,7 +8,7 @@ Express and MongoDB backend for the TripleTen News Explorer final project. Provi
 
 The backend includes user registration and sign-in, JWT authorization, protected profile and saved-article routes, ownership checks, request validation, and JSON request/error logging. The API is deployed over HTTPS.
 
-Instructor-feedback fixes and optional hardening have also been implemented and verified locally on `stage-2-backend`: detailed Celebrate validation responses, custom error classes, separate error logging, Helmet, and rate limiting. These latest changes still need deployment to the VM.
+Instructor-feedback fixes and optional hardening include detailed Celebrate validation responses, custom error classes, separate error logging, Helmet, and rate limiting. Stage 2 has been merged into `main` and deployed. Stage 3 CORS integration is being developed separately on `stage-3-cors`.
 
 Stage 2 pull request: https://github.com/MykeRam/news-explorer-backend/pull/1
 
@@ -50,6 +50,22 @@ npm run lint
 ```
 
 Production uses `NODE_ENV=production` and requires a `JWT_SECRET`. The MongoDB connection is configured with `MONGODB_URI`; `PORT` defaults to `3000`.
+
+## Frontend access (CORS)
+
+By default, browser access is allowed from the Vite development origins `http://localhost:5173` and `http://127.0.0.1:5173`.
+
+Set `CORS_ALLOWED_ORIGINS` in the backend environment to replace that list with the origins needed for the current deployment. For example, to allow the existing GitHub Pages frontend and local development:
+
+```dotenv
+CORS_ALLOWED_ORIGINS=https://mykeram.github.io,http://localhost:5173,http://127.0.0.1:5173
+```
+
+An origin contains only the protocol, hostname, and optional port: no path or trailing slash. When the Stage 3 frontend subdomain is registered, add its exact HTTPS origin to this list and restart the API. The Stage 3 frontend subdomain has not been selected yet.
+
+The middleware permits `GET`, `HEAD`, `POST`, `DELETE`, and `OPTIONS`, with `Authorization` and `Content-Type` request headers. It handles allowed preflight requests before authentication and rate limiting. Allowed origins receive CORS headers on API errors as well, including `401`, validation errors, and `429`; rate-limit response headers are exposed to the frontend.
+
+Origins outside the list receive no `Access-Control-Allow-Origin` header, so browsers cannot read cross-origin responses. CORS is a browser policy, not a replacement for JWT authorization; requests from non-browser tools still work. Authentication uses Bearer tokens, so cookie credentials are not enabled.
 
 ## Endpoints
 
@@ -113,4 +129,4 @@ Verified locally on October 21, 2026, after applying instructor feedback:
 
 ## Next stage
 
-Stage 3 covers frontend integration with the deployed backend, including authentication flows, saved articles, and CORS configuration. Deploy and verify the latest backend hardening changes before testing that integration.
+Stage 3 covers frontend integration with the deployed backend, including authentication flows and saved articles. The Stage 2 backend and hardening changes have been merged and deployed. The CORS integration changes on `stage-3-cors` still need review and deployment with the selected frontend origins.
